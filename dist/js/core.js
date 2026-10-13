@@ -7,7 +7,11 @@ window.Aura = (() => {
   const el = (tag, attrs={}, ...children) => {const n=document.createElement(tag); for(const [k,v] of Object.entries(attrs)){if(k==='text') n.textContent=v; else if(k==='class') n.className=v; else if(k.startsWith('on') && typeof v==='function')n.addEventListener(k.slice(2),v);else if(v!==false && v!=null)n.setAttribute(k,v===true?'':v);} children.flat(Infinity).forEach(c=>{if(c!=null)n.append(c instanceof Node?c:document.createTextNode(String(c)));});return n;};
   function toast(msg){let n=document.getElementById('notice');if(!n){n=el('div',{id:'notice',class:'toast',role:'status','aria-live':'polite'});document.body.append(n);}n.textContent=msg; n.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>n.hidden=true,6500);}
   const storage = {read(key,fallback){try {const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback;} catch {toast('Não foi possível ler os dados salvos neste navegador.');return fallback;}},write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{toast('Não foi possível salvar neste navegador. Os dados podem se perder ao atualizar.');return false;}}};
-  const safeImage = src => typeof src==='string' && src.length<2000 && (/^https?:\/\//i.test(src) || (!/^[a-z]+:/i.test(src) && !src.startsWith('//') && !/[<>\\]/.test(src) && /\.(png|jpe?g|webp|avif|svg)(\?.*)?$/i.test(src)));
+  const safeImage = src => {
+    if(typeof src!=='string')return false;
+    if(src.startsWith('data:'))return src.length<=450000&&/^data:image\/(jpeg|png|webp);base64,(?:[A-Za-z0-9+/]{4})+(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(src);
+    return src.length<2000&&(/^https?:\/\//i.test(src)||(!/^[a-z]+:/i.test(src)&&!src.startsWith('//')&&!/[<>\\]/.test(src)&&/\.(png|jpe?g|webp|avif|svg)(\?.*)?$/i.test(src)));
+  };
   function validate(data){
     if(!Array.isArray(data)||!data.length||data.length>1000)throw Error('O catálogo deve conter entre 1 e 1000 produtos.');
     const ids=new Set(),codes=new Set();
