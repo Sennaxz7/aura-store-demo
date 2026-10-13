@@ -1,0 +1,5 @@
+# Loja estática: os arquivos públicos estão em dist/.
+[build]
+  base = "."
+  publish = "dist"
+  command = ""
